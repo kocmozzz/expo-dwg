@@ -1,15 +1,57 @@
 import * as React from 'react';
-import { StyleSheet } from 'react-native';
+import { Linking, StyleSheet } from 'react-native';
+import HTML from 'react-native-render-html';
+import TableRenderer from '@native-html/table-plugin';
+import { ScrollView } from 'react-native-gesture-handler';
+import WebView from 'react-native-webview';
 
-import EditScreenInfo from '../components/EditScreenInfo';
-import { Text, View } from '../components/Themed';
+import { View } from '../components/Themed';
+import useColorScheme from '../hooks/useColorScheme';
+
+const BASE_URL = 'https://dwg.vc';
+
+const isAbsolute = (url: string): boolean => {
+  return /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/|mailto:)?[a-z0-9@]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/.test(url);
+}
 
 export default function TabTwoScreen() {
+  const theme = useColorScheme();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab Two</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="/screens/TabTwoScreen.tsx" />
+      <ScrollView style={styles.content}>
+        <HTML
+          WebView={WebView}
+          source={{uri: BASE_URL + '/legal/terms.html'}}
+          tagsStyles={{
+            p: {
+              marginBottom: 30
+            },
+            h2: {
+              marginBottom: 30
+            }
+          }}
+          defaultTextProps={{
+            style: {
+              color: theme === 'dark' ? '#fff' : '#000'
+            }
+          }}
+          renderers={{
+            img: () => null,
+            h1: () => null,
+            footer: () => null,
+            header: () => null,
+            table: TableRenderer
+          }}
+          onLinkPress={(evt, href) => {
+            if (isAbsolute(href)) {
+              Linking.openURL(href);
+            } else {
+              Linking.openURL(BASE_URL + href);
+            }
+          }}
+        />
+      </ScrollView>
     </View>
   );
 }
@@ -20,13 +62,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
+  content: {
+    paddingHorizontal: 20
+  }
 });
